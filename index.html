@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Electro Sync : Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f7f9fc;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #222;
+    }
+    .status-bar {
+      text-align: right;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .status-online {
+      color: green;
+    }
+    .status-offline {
+      color: orange;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .card {
+      background: #fdfefe;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+    }
+    .card h2 {
+      margin-top: 0;
+      color: #2c3e50;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 8px;
+    }
+    .content-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    .content-list li {
+      margin: 6px 0;
+      padding: 8px 12px;
+      background: #eef2f7;
+      border-radius: 6px;
+    }
+    .btn {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background-color: #2980b9;
+    }
+    .unit-toggle {
+      margin: 10px 0;
+    }
+    .unit-toggle label {
+      margin-right: 10px;
+    }
+    .highlight {
+      background: #d1ecf1;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="status-bar" id="device-status"></div>
+  <h1>Electro Sync : Dashboard</h1>
+  <div class="container">
+
+    <div class="card">
+      <h2>Live Readings</h2>
+      <ul class="content-list" id="current-output"></ul>
+    </div>
+
+    <div class="card">
+      <h2>Today</h2>
+      <div class="unit-toggle">
+        <label><input type="radio" name="unit-today" value="kwh" checked> kWh</label>
+        <label><input type="radio" name="unit-today" value="wh"> Wh</label>
+      </div>
+      <ul class="content-list" id="today-usage"></ul>
+      <button class="btn" onclick="location.href='hourly.html'">Show Hourly Usage</button>
+    </div>
+
+    <div class="card">
+      <h2>This Month</h2>
+      <div class="unit-toggle">
+        <label><input type="radio" name="unit-total" value="kwh" checked> kWh</label>
+        <label><input type="radio" name="unit-total" value="wh"> Wh</label>
+      </div>
+      <ul class="content-list" id="monthly-total"></ul>
+      <button class="btn" onclick="location.href='monthly.html'">Show Monthly History</button>
+    </div>
+
+    <div class="card">
+      <h2>Control</h2>
+      <label style="display:flex;align-items:center;gap:10px">
+        <input type="checkbox" id="toggleSwitch" checked style="transform:scale(1.5);">
+        <span>Mains Power</span>
+      </label>
+    </div>
+
+    <div class="card">
+      <h2>Reset Hourly Usage</h2>
+      <button class="btn" onclick="fetchData('reset-hourly', 'reset-response')">Trigger Reset</button>
+      <div id="reset-response">Click above to clear hourly usage</div>
+    </div>
+
+  </div>
+
+  <script>
+    const BASE_URL = "https://smart-meter-backend-s61l.onrender.com/smartmeter/";
+
+    function getSelectedUnit(name) {
+      return document.querySelector(`input[name="${name}"]:checked`).value;
+    }
+
+    function convertWh(value, unit) {
+      return unit === 'kwh' ? (value / 1000).toFixed(3) : value.toFixed(0);
+    }
+
+    async function fetchData(endpoint, elementId) {
+      try {
+        const response = await fetch(`${BASE_URL}${endpoint}/`);
+        const data = await response.json();
+
+        if (endpoint === 'currentvalue') {
+          const list = document.getElementById(elementId);
+          list.innerHTML = `
+            <li>Voltage: ${data.voltage} V</li>
+            <li>Current: ${data.current} A</li>
+            <li>Power: ${data.power} W</li>
+            <li>Timestamp: ${new Date(data.created_at).toLocaleString()}</li>
+          `;
+        } else if (endpoint === 'get-today-usage') {
+          const unit = getSelectedUnit('unit-today');
+          const container = document.getElementById(elementId);
+          container.innerHTML = data.error 
+            ? `<li><strong>${data.error}</strong> (Date: ${data.date})</li>`
+            : `
+              <li>Date: ${data.date}</li>
+              <li>Usage: ${convertWh(data.usage, unit)} ${unit.toUpperCase()}</li>
+              <li>Last Updated: ${data.last_updated.split('.')[0]}</li>
+            `;
+        } else if (endpoint === 'get-monthly-usage') {
+          const unit = getSelectedUnit('unit-total');
+          const container = document.getElementById(elementId);
+          container.innerHTML = `
+            <li>Month: ${data.month} ${data.year}</li>
+            <li>Total Usage: ${convertWh(data.total_usage, unit)} ${unit.toUpperCase()}</li>
+            <li>Days Recorded: ${data.total_days_recorded}</li>
+          `;
+        } else if (endpoint === 'device-status') {
+          const statusEl = document.getElementById('device-status');
+          statusEl.textContent = `Device Status: ${data.status}`;
+          statusEl.className = data.status === 'Online' ? 'status-bar status-online' : 'status-bar status-offline';
+        } else if (endpoint === 'reset-hourly') {
+          document.getElementById(elementId).innerHTML = `<strong>${data.status}</strong>`;
+        }
+      } catch (error) {
+        document.getElementById(elementId).textContent = `Error: ${error}`;
+      }
+    }
+
+    document.getElementById('toggleSwitch').addEventListener('change', async function () {
+      const value = this.checked ? 1 : 0;
+      const url = `https://blynk.cloud/external/api/update?token=LA7PMTjaRKOy0pJqqwdYihiMxT_sdysp&v0=${value}`;
+      try {
+        await fetch(url);
+        console.log('Blynk updated to:', value);
+      } catch (error) {
+        console.error('Failed to update Blynk:', error);
+      }
+    });
+
+    window.onload = () => {
+      fetchData('device-status', 'device-status');
+      fetchData('currentvalue', 'current-output');
+      fetchData('get-today-usage', 'today-usage');
+      fetchData('get-monthly-usage', 'monthly-total');
+
+      const radios = document.querySelectorAll("input[type='radio']");
+      radios.forEach(radio => radio.addEventListener('change', () => {
+        fetchData('get-today-usage', 'today-usage');
+        fetchData('get-monthly-usage', 'monthly-total');
+      }));
+    };
+  </script>
+</body>
+</html>

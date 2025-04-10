@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monthly Usage - Smart Energy Meter</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f9fc;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .container {
+      max-width: 1000px;
+      margin: auto;
+    }
+    .unit-toggle {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .unit-toggle label {
+      margin-right: 15px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #eef2f7;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+    }
+    .summary {
+      text-align: center;
+      font-weight: bold;
+      background: #e8f4fa;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+    .btn-back {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 16px;
+      background: #3498db;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    .btn-back:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Monthly Usage History</h1>
+
+    <div class="unit-toggle">
+      <label><input type="radio" name="unit-monthly" value="kwh" checked> kWh</label>
+      <label><input type="radio" name="unit-monthly" value="wh"> Wh</label>
+    </div>
+
+    <div id="monthly-summary" class="summary">Loading monthly summary...</div>
+    <ul id="monthly-list"></ul>
+
+    <a href="index.html" class="btn-back">⬅ Back to Dashboard</a>
+  </div>
+
+  <script>
+    const BASE_URL = "https://smart-meter-backend-s61l.onrender.com/smartmeter/";
+
+    function getSelectedUnit() {
+      return document.querySelector('input[name="unit-monthly"]:checked').value;
+    }
+
+    function convertWh(value, unit) {
+      return unit === 'kwh' ? (value / 1000).toFixed(3) : value.toFixed(0);
+    }
+
+    async function loadMonthlyData() {
+      const summaryRes = await fetch(`${BASE_URL}get-monthly-usage/`);
+      const summaryData = await summaryRes.json();
+      const historyRes = await fetch(`${BASE_URL}get-monthly-history/`);
+      const historyData = await historyRes.json();
+
+      const unit = getSelectedUnit();
+      const summaryEl = document.getElementById('monthly-summary');
+      const listEl = document.getElementById('monthly-list');
+
+      summaryEl.innerHTML = `
+        Month: ${summaryData.month} ${summaryData.year}<br>
+        Total Usage: ${convertWh(summaryData.total_usage, unit)} ${unit.toUpperCase()}<br>
+        Days Recorded: ${summaryData.total_days_recorded}
+      `;
+
+      listEl.innerHTML = '<li><strong>Date — Usage</strong></li>';
+      historyData.data.forEach(entry => {
+        listEl.innerHTML += `<li>${entry.date} — ${convertWh(entry.usage, unit)} ${unit.toUpperCase()}</li>`;
+      });
+    }
+
+    document.querySelectorAll('input[name="unit-monthly"]').forEach(radio => {
+      radio.addEventListener('change', loadMonthlyData);
+    });
+
+    loadMonthlyData();
+  </script>
+</body>
+</html>
