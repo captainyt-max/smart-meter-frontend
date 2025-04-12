@@ -1,208 +1,597 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Electro Sync : Dashboard</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f7f9fc;
-      margin: 0;
-      padding: 20px;
-      color: #333;
-    }
-    h1 {
-      text-align: center;
-      color: #222;
-    }
-    .status-bar {
-      text-align: right;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-    .status-online {
-      color: green;
-    }
-    .status-offline {
-      color: orange;
-    }
-    .container {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      max-width: 1000px;
-      margin: auto;
-    }
-    .card {
-      background: #fdfefe;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      padding: 20px;
-    }
-    .card h2 {
-      margin-top: 0;
-      color: #2c3e50;
-      border-bottom: 1px solid #ccc;
-      padding-bottom: 8px;
-    }
-    .content-list {
-      list-style: none;
-      padding-left: 0;
-    }
-    .content-list li {
-      margin: 6px 0;
-      padding: 8px 12px;
-      background: #eef2f7;
-      border-radius: 6px;
-    }
-    .btn {
-      background-color: #3498db;
-      color: white;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .btn:hover {
-      background-color: #2980b9;
-    }
-    .unit-toggle {
-      margin: 10px 0;
-    }
-    .unit-toggle label {
-      margin-right: 10px;
-    }
-    .highlight {
-      background: #d1ecf1;
-      font-weight: bold;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Electro Sync : Modern Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* --- CSS Variables for Theming --- */
+        :root {
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-primary: #34495e;
+            --text-secondary: #566573;
+            --accent-color: #3498db;
+            --accent-hover: #2980b9;
+            --border-color: #e1e8ed;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --error-color: #e74c3c;
+            --font-family: 'Poppins', sans-serif;
+            --border-radius: 12px;
+            --card-padding: 25px;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--bg-color);
+            margin: 0;
+            padding: 25px;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .status-bar {
+            text-align: right;
+            font-weight: 500;
+            margin-bottom: 15px;
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            display: inline-block;
+            float: right;
+            clear: both;
+            font-size: 0.9em;
+        }
+
+        .status-online {
+            color: var(--success-color);
+            background-color: rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+
+        .status-offline {
+            color: var(--warning-color);
+            background-color: rgba(243, 156, 18, 0.1);
+            border: 1px solid rgba(243, 156, 18, 0.3);
+        }
+         .status-loading {
+            color: var(--text-secondary);
+            background-color: rgba(131, 145, 146, 0.1);
+            border: 1px solid rgba(131, 145, 146, 0.3);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 40px auto 0;
+            clear: both;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px var(--shadow-color);
+            padding: var(--card-padding);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            font-weight: 600;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+         .card h2 > i:first-child { /* Target only the first icon (title icon) */
+             font-size: 0.9em;
+         }
+
+        .content-list {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 15px;
+            flex-grow: 1;
+        }
+
+        .content-list li {
+            margin: 10px 0;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-start; /* Align items (icon + label) to start */
+            align-items: center;
+            font-size: 0.95em;
+            color: var(--text-secondary);
+        }
+
+         .content-list li i {
+             margin-right: 10px;
+             color: var(--accent-color);
+             width: 20px;
+             text-align: center;
+         }
+
+        .content-list li .value {
+             font-weight: 500;
+             color: var(--text-primary);
+             margin-left: auto; /* Pushes the value to the right */
+             padding-left: 10px; /* Space between label and value */
+             text-align: right; /* Align value text to right */
+         }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            align-self: flex-start;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+         .btn:active {
+             transform: translateY(0);
+         }
+
+        .unit-toggle {
+            margin: 15px 0;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .unit-toggle label {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+         .unit-toggle input[type="radio"] {
+             margin-right: 6px;
+             accent-color: var(--accent-color);
+             transform: scale(1.1);
+         }
+
+        .loading-placeholder, .error-message {
+            color: var(--text-secondary);
+            font-style: italic;
+            padding: 15px;
+            text-align: center;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+         .error-message {
+             color: var(--error-color);
+             background-color: rgba(231, 76, 60, 0.05);
+             border-color: rgba(231, 76, 60, 0.3);
+             font-style: normal;
+             font-weight: 500;
+         }
+
+        /* --- Custom Toggle Switch --- */
+        .toggle-switch-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            font-size: 1em;
+            color: var(--text-primary);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 26px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--success-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--success-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+        /* --- End Custom Toggle Switch --- */
+
+         #reset-response {
+             margin-top: 15px;
+             padding: 10px;
+             border-radius: 6px;
+             font-size: 0.9em;
+             background-color: #e9ecef;
+             color: var(--text-secondary);
+             text-align: center;
+         }
+         #reset-response.success {
+             background-color: rgba(46, 204, 113, 0.1);
+             color: var(--success-color);
+             font-weight: 500;
+         }
+         #reset-response.error {
+             background-color: rgba(231, 76, 60, 0.1);
+             color: var(--error-color);
+             font-weight: 500;
+         }
+
+         /* Removed .refresh-icon styles */
+
+    </style>
 </head>
 <body>
-  <div class="status-bar" id="device-status"></div>
-  <h1>Electro Sync : Dashboard</h1>
-  <div class="container">
-
-    <div class="card">
-      <h2>Live Readings</h2>
-      <ul class="content-list" id="current-output"></ul>
+    <div class="status-bar status-loading" id="device-status">
+        <i class="fas fa-spinner fa-spin"></i> Checking Status...
     </div>
 
-    <div class="card">
-      <h2>Today</h2>
-      <div class="unit-toggle">
-        <label><input type="radio" name="unit-today" value="kwh" checked> kWh</label>
-        <label><input type="radio" name="unit-today" value="wh"> Wh</label>
-      </div>
-      <ul class="content-list" id="today-usage"></ul>
-      <button class="btn" onclick="location.href='hourly.html'">Show Hourly Usage</button>
+    <h1><i class="fas fa-bolt"></i> Electro Sync : Dashboard</h1>
+
+    <div class="container">
+
+        <div class="card">
+            <h2><i class="fas fa-satellite-dish"></i> Live Readings</h2>
+            <ul class="content-list" id="current-output">
+                <div class="loading-placeholder">Loading Live Data...</div>
+            </ul>
+        </div>
+
+        <div class="card">
+             <h2>
+                <i class="fas fa-calendar-day"></i> Today
+            </h2>
+            <div class="unit-toggle">
+                <label><input type="radio" name="unit-today" value="kwh" checked> kWh</label>
+                <label><input type="radio" name="unit-today" value="wh"> Wh</label>
+            </div>
+            <ul class="content-list" id="today-usage">
+                 <div class="loading-placeholder">Loading Today's Usage...</div>
+            </ul>
+            <button class="btn" onclick="location.href='hourly.html'">
+                <i class="fas fa-clock"></i> Show Hourly Usage
+            </button>
+        </div>
+
+        <div class="card">
+            <h2>
+                <i class="fas fa-calendar-alt"></i> This Month
+            </h2>
+            <div class="unit-toggle">
+                <label><input type="radio" name="unit-total" value="kwh" checked> kWh</label>
+                <label><input type="radio" name="unit-total" value="wh"> Wh</label>
+            </div>
+            <ul class="content-list" id="monthly-total">
+                 <div class="loading-placeholder">Loading Monthly Usage...</div>
+            </ul>
+            <button class="btn" onclick="location.href='monthly.html'">
+                <i class="fas fa-chart-bar"></i> Show Monthly History
+            </button>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-toggle-on"></i> Control</h2>
+            <label class="toggle-switch-label">
+                 <span class="toggle-switch">
+                    <input type="checkbox" id="toggleSwitch" checked>
+                    <span class="slider"></span>
+                </span>
+                <span>Mains Power</span>
+            </label>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-history"></i> Reset Hourly Usage</h2>
+             <div id="reset-response">Click below to clear today's hourly usage data.</div>
+            <button class="btn" onclick="triggerReset()">
+                <i class="fas fa-redo-alt"></i> Trigger Reset
+            </button>
+        </div>
+
     </div>
 
-    <div class="card">
-      <h2>This Month</h2>
-      <div class="unit-toggle">
-        <label><input type="radio" name="unit-total" value="kwh" checked> kWh</label>
-        <label><input type="radio" name="unit-total" value="wh"> Wh</label>
-      </div>
-      <ul class="content-list" id="monthly-total"></ul>
-      <button class="btn" onclick="location.href='monthly.html'">Show Monthly History</button>
-    </div>
+    <script>
+        const BASE_URL = "https://smart-meter-backend-s61l.onrender.com/smartmeter/";
+        const BLYNK_TOKEN = "LA7PMTjaRKOy0pJqqwdYihiMxT_sdysp"; // Keep your token secure
+        let refreshIntervalId = null; // To store the interval ID
 
-    <div class="card">
-      <h2>Control</h2>
-      <label style="display:flex;align-items:center;gap:10px">
-        <input type="checkbox" id="toggleSwitch" checked style="transform:scale(1.5);">
-        <span>Mains Power</span>
-      </label>
-    </div>
-
-    <div class="card">
-      <h2>Reset Hourly Usage</h2>
-      <button class="btn" onclick="fetchData('reset-hourly', 'reset-response')">Trigger Reset</button>
-      <div id="reset-response">Click above to clear hourly usage</div>
-    </div>
-
-  </div>
-
-  <script>
-    const BASE_URL = "https://smart-meter-backend-s61l.onrender.com/smartmeter/";
-
-    function getSelectedUnit(name) {
-      return document.querySelector(`input[name="${name}"]:checked`).value;
-    }
-
-    function convertWh(value, unit) {
-      return unit === 'kwh' ? (value / 1000).toFixed(3) : value.toFixed(0);
-    }
-
-    async function fetchData(endpoint, elementId) {
-      try {
-        const response = await fetch(`${BASE_URL}${endpoint}/`);
-        const data = await response.json();
-
-        if (endpoint === 'currentvalue') {
-          const list = document.getElementById(elementId);
-          list.innerHTML = `
-            <li>Voltage: ${data.voltage} V</li>
-            <li>Current: ${data.current} A</li>
-            <li>Power: ${data.power} W</li>
-            <li>Timestamp: ${new Date(data.created_at).toLocaleString()}</li>
-          `;
-        } else if (endpoint === 'get-today-usage') {
-          const unit = getSelectedUnit('unit-today');
-          const container = document.getElementById(elementId);
-          container.innerHTML = data.error 
-            ? `<li><strong>${data.error}</strong> (Date: ${data.date})</li>`
-            : `
-              <li>Date: ${data.date}</li>
-              <li>Usage: ${convertWh(data.usage, unit)} ${unit.toUpperCase()}</li>
-              <li>Last Updated: ${data.last_updated.split('.')[0]}</li>
-            `;
-        } else if (endpoint === 'get-monthly-usage') {
-          const unit = getSelectedUnit('unit-total');
-          const container = document.getElementById(elementId);
-          container.innerHTML = `
-            <li>Month: ${data.month} ${data.year}</li>
-            <li>Total Usage: ${convertWh(data.total_usage, unit)} ${unit.toUpperCase()}</li>
-            <li>Days Recorded: ${data.total_days_recorded}</li>
-          `;
-        } else if (endpoint === 'device-status') {
-          const statusEl = document.getElementById('device-status');
-          statusEl.textContent = `Device Status: ${data.status}`;
-          statusEl.className = data.status === 'Online' ? 'status-bar status-online' : 'status-bar status-offline';
-        } else if (endpoint === 'reset-hourly') {
-          document.getElementById(elementId).innerHTML = `<strong>${data.status}</strong>`;
+        // --- Helper Functions ---
+        function getSelectedUnit(name) {
+            const selected = document.querySelector(`input[name="${name}"]:checked`);
+            return selected ? selected.value : 'kwh';
         }
-      } catch (error) {
-        document.getElementById(elementId).textContent = `Error: ${error}`;
-      }
-    }
 
-    document.getElementById('toggleSwitch').addEventListener('change', async function () {
-      const value = this.checked ? 1 : 0;
-      const url = `https://blynk.cloud/external/api/update?token=LA7PMTjaRKOy0pJqqwdYihiMxT_sdysp&v0=${value}`;
-      try {
-        await fetch(url);
-        console.log('Blynk updated to:', value);
-      } catch (error) {
-        console.error('Failed to update Blynk:', error);
-      }
-    });
+        function convertWh(value, unit) {
+            if (typeof value !== 'number') return 'N/A';
+            return unit === 'kwh' ? (value / 1000).toFixed(3) : value.toFixed(0);
+        }
 
-    window.onload = () => {
-      fetchData('device-status', 'device-status');
-      fetchData('currentvalue', 'current-output');
-      fetchData('get-today-usage', 'today-usage');
-      fetchData('get-monthly-usage', 'monthly-total');
+        function showLoading(elementId, message = "Loading...") {
+            const element = document.getElementById(elementId);
+            if (element) {
+                 if (element.tagName === 'UL') {
+                    element.innerHTML = `<div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> ${message}</div>`;
+                 } else {
+                     element.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${message}`;
+                 }
+            }
+        }
 
-      const radios = document.querySelectorAll("input[type='radio']");
-      radios.forEach(radio => radio.addEventListener('change', () => {
-        fetchData('get-today-usage', 'today-usage');
-        fetchData('get-monthly-usage', 'monthly-total');
-      }));
-    };
-  </script>
+        function showError(elementId, error) {
+             const element = document.getElementById(elementId);
+             if (element) {
+                 const errorMessage = `Error: ${error.message || error}`;
+                 console.error(`Error fetching ${elementId}:`, error);
+                 if (element.tagName === 'UL') {
+                    element.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i> ${errorMessage}</div>`;
+                 } else {
+                      element.textContent = errorMessage;
+                      element.className = 'error-message';
+                 }
+            }
+        }
+
+
+        // --- Main Data Fetching Function ---
+        async function fetchData(endpoint, elementId) {
+            const targetElement = document.getElementById(elementId);
+            if (!targetElement && endpoint !== 'reset-hourly') {
+                 console.error(`Element with ID ${elementId} not found.`);
+                 return Promise.reject(new Error(`Element ${elementId} not found`));
+            }
+
+            // Minimal loading indicator handling for background refresh
+            // Avoid showing full placeholder if content already exists, prevent flicker
+            let showInitialLoading = false;
+            if (targetElement && targetElement.tagName === 'UL' && !targetElement.innerHTML.includes('<li') && !targetElement.innerHTML.includes('error-message')) {
+                 showInitialLoading = true; // Only show full loading if the list is truly empty initially
+                 showLoading(elementId, `Loading ${endpoint.replace('-', ' ')}...`);
+            } else if (endpoint === 'device-status' && document.getElementById('device-status').classList.contains('status-loading')){
+                 // Initial status loading
+            }
+
+
+            try {
+                const response = await fetch(`${BASE_URL}${endpoint}/`);
+                 if (!response.ok) {
+                     throw new Error(`HTTP error! status: ${response.status}`);
+                 }
+                const data = await response.json();
+
+                // Prevent updating if the loading placeholder was just shown (avoids race condition flicker)
+                 if (showInitialLoading && targetElement.innerHTML.includes('loading-placeholder')) {
+                    // The content will be updated now, removing the placeholder
+                 }
+
+
+                // --- Update DOM based on endpoint ---
+                switch (endpoint) {
+                     case 'currentvalue':
+                        targetElement.innerHTML = `
+                            <li><i class="fas fa-bolt"></i> Voltage: <span class="value">${data.voltage ?? 'N/A'} V</span></li>
+                            <li><i class="fas fa-plug"></i> Current: <span class="value">${data.current ?? 'N/A'} A</span></li>
+                            <li><i class="fas fa-lightbulb"></i> Power: <span class="value">${data.power ?? 'N/A'} W</span></li>
+                            <li><i class="far fa-clock"></i> Timestamp: <span class="value">${data.created_at ? new Date(data.created_at).toLocaleString() : 'N/A'}</span></li>
+                        `;
+                        break;
+                    case 'get-today-usage':
+                        const unitToday = getSelectedUnit('unit-today');
+                        // Check if element still exists before updating (important for frequent updates)
+                         if(document.getElementById(elementId)){
+                             if (data.error) {
+                                targetElement.innerHTML = `<li class="error-message"><i class="fas fa-exclamation-circle"></i> <strong>${data.error}</strong> (Date: ${data.date || 'N/A'})</li>`;
+                             } else {
+                                targetElement.innerHTML = `
+                                    <li><i class="far fa-calendar-alt"></i> Date: <span class="value">${data.date || 'N/A'}</span></li>
+                                    <li><i class="fas fa-tachometer-alt"></i> Usage: <span class="value">${convertWh(data.usage, unitToday)} ${unitToday.toUpperCase()}</span></li>
+                                    <li><i class="far fa-clock"></i> Last Updated: <span class="value">${data.last_updated ? data.last_updated.split('.')[0] : 'N/A'}</span></li>
+                                `;
+                             }
+                         }
+                        break;
+                    case 'get-monthly-usage':
+                        const unitTotal = getSelectedUnit('unit-total');
+                         // Check if element still exists before updating
+                         if(document.getElementById(elementId)){
+                             if (data.error) {
+                                targetElement.innerHTML = `<li class="error-message"><i class="fas fa-exclamation-circle"></i> <strong>${data.error}</strong></li>`;
+                             } else {
+                                targetElement.innerHTML = `
+                                    <li><i class="far fa-calendar-alt"></i> Month: <span class="value">${data.month || 'N/A'} ${data.year || ''}</span></li>
+                                    <li><i class="fas fa-chart-pie"></i> Total Usage: <span class="value">${convertWh(data.total_usage, unitTotal)} ${unitTotal.toUpperCase()}</span></li>
+                                    <li><i class="fas fa-clipboard-list"></i> Days Recorded: <span class="value">${data.total_days_recorded ?? 'N/A'}</span></li>
+                                `;
+                             }
+                         }
+                        break;
+                    case 'device-status':
+                        const statusEl = document.getElementById('device-status');
+                        if (statusEl) {
+                             statusEl.innerHTML = `<i class="fas ${data.status === 'Online' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i> Device Status: ${data.status || 'Unknown'}`;
+                            statusEl.className = data.status === 'Online' ? 'status-bar status-online' : 'status-bar status-offline';
+                        }
+                        break;
+                    case 'reset-hourly':
+                        const responseEl = document.getElementById(elementId);
+                         if(responseEl){
+                             responseEl.innerHTML = `<strong>${data.status || 'No response received'}</strong>`;
+                             responseEl.className = response.ok ? 'success' : 'error';
+                             setTimeout(() => {
+                                responseEl.textContent = "Click button above to clear hourly usage again.";
+                                responseEl.className = '';
+                             }, 5000);
+                             fetchData('get-today-usage', 'today-usage');
+                         }
+                         break;
+                     default:
+                         console.warn(`Unhandled endpoint: ${endpoint}`);
+                }
+                return data;
+
+            } catch (error) {
+                // Only show error if it wasn't the initial load placeholder case
+                 if (!showInitialLoading) {
+                    showError(elementId, error);
+                 } else {
+                    // If initial load fails, the placeholder remains, or show error explicitly
+                     showError(elementId, error);
+                 }
+
+                 if (endpoint === 'device-status') {
+                    const statusEl = document.getElementById('device-status');
+                     if (statusEl) {
+                        statusEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Status Unavailable`;
+                        statusEl.className = 'status-bar status-offline';
+                     }
+                 }
+                 if (endpoint === 'reset-hourly') {
+                      const responseEl = document.getElementById(elementId);
+                      if(responseEl){
+                           responseEl.innerHTML = `<strong>Reset Failed: ${error.message}</strong>`;
+                           responseEl.className = 'error';
+                      }
+                 }
+                 return Promise.reject(error);
+            }
+        }
+
+        // --- Toggle Switch Logic ---
+        document.getElementById('toggleSwitch').addEventListener('change', async function () {
+            const value = this.checked ? 1 : 0;
+            const url = `https://blynk.cloud/external/api/update?token=${BLYNK_TOKEN}&v0=${value}`;
+            try {
+                this.disabled = true;
+                await fetch(url);
+                console.log('Blynk updated to:', value);
+            } catch (error) {
+                console.error('Failed to update Blynk:', error);
+                this.checked = !this.checked;
+                alert("Failed to control Mains Power. Please check connection.");
+            } finally {
+                 this.disabled = false;
+            }
+        });
+
+         // --- Reset Button Logic ---
+         function triggerReset() {
+             const responseEl = document.getElementById('reset-response');
+             responseEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Resetting...`;
+             responseEl.className = '';
+             fetchData('reset-hourly', 'reset-response');
+         }
+
+
+        // --- Initial Load & Setup ---
+        window.onload = () => {
+            // Fetch initial data
+            fetchData('device-status', 'device-status');
+            fetchData('currentvalue', 'current-output');
+            fetchData('get-today-usage', 'today-usage');
+            fetchData('get-monthly-usage', 'monthly-total');
+
+            // Add listeners for unit changes
+            const radios = document.querySelectorAll("input[type='radio']");
+            radios.forEach(radio => radio.addEventListener('change', () => {
+                if (radio.name === 'unit-today') {
+                    fetchData('get-today-usage', 'today-usage');
+                } else if (radio.name === 'unit-total') {
+                    fetchData('get-monthly-usage', 'monthly-total');
+                }
+            }));
+
+             // Removed manual refresh icon listeners
+
+             // Set up periodic refresh for live data, status, AND totals
+             if (refreshIntervalId) clearInterval(refreshIntervalId);
+             refreshIntervalId = setInterval(() => {
+                 fetchData('device-status', 'device-status');
+                 fetchData('currentvalue', 'current-output');
+                 // --- ADDED: Auto-refresh for Today and Month ---
+                 fetchData('get-today-usage', 'today-usage');
+                 fetchData('get-monthly-usage', 'monthly-total');
+                 // Note: Consider if 3 seconds is too frequent for today/monthly data.
+                 // Longer intervals (e.g., 30-60 seconds) might be more efficient.
+             }, 3000); // Refresh ALL specified sections every 3 seconds
+
+        };
+
+         // Optional: Clear interval when the user navigates away
+         window.onbeforeunload = () => {
+             if (refreshIntervalId) clearInterval(refreshIntervalId);
+         };
+
+    </script>
 </body>
 </html>
