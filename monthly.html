@@ -1,117 +1,442 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Monthly Usage - Smart Energy Meter</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f7f9fc;
-      margin: 0;
-      padding: 20px;
-      color: #333;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-    .container {
-      max-width: 1000px;
-      margin: auto;
-    }
-    .unit-toggle {
-      text-align: center;
-      margin: 20px 0;
-    }
-    .unit-toggle label {
-      margin-right: 15px;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      background: #eef2f7;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 8px;
-    }
-    .summary {
-      text-align: center;
-      font-weight: bold;
-      background: #e8f4fa;
-      padding: 12px;
-      border-radius: 6px;
-      margin-bottom: 20px;
-    }
-    .btn-back {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 10px 16px;
-      background: #3498db;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-    }
-    .btn-back:hover {
-      background-color: #2980b9;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Usage History - Electro Sync</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+    <style>
+        /* --- CSS Variables --- */
+        :root {
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-primary: #34495e;
+            --text-secondary: #566573;
+            --accent-color: #3498db;
+            --accent-hover: #2980b9;
+            --border-color: #e1e8ed;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --error-color: #e74c3c;
+            --font-family: 'Poppins', sans-serif;
+            --border-radius: 12px;
+            --card-padding: 25px;
+            --chart-line-color: var(--accent-color);
+            --chart-point-color: var(--accent-color);
+            --chart-fill-color: rgba(52, 152, 219, 0.1); /* Light blue fill */
+            --layout-gap: 25px;
+            --list-max-height: 450px; /* Slightly taller for monthly */
+        }
+
+        body {
+            font-family: var(--font-family); background: var(--bg-color);
+            margin: 0; padding: 25px; color: var(--text-primary); line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1300px; /* Keep wider layout */
+            margin: 40px auto 0;
+        }
+
+        .card {
+            background: var(--card-bg); border-radius: var(--border-radius);
+            box-shadow: 0 4px 12px var(--shadow-color); padding: var(--card-padding);
+            margin-bottom: 20px;
+        }
+
+         .card h1 {
+             text-align: center; color: var(--accent-color); margin-top: 0;
+             margin-bottom: 25px; font-weight: 600; border-bottom: 1px solid var(--border-color);
+             padding-bottom: 15px; display: flex; justify-content: center;
+             align-items: center; gap: 10px;
+         }
+
+        .unit-toggle {
+            margin: 20px 0; display: flex; gap: 15px; align-items: center; justify-content: center;
+        }
+        .unit-toggle label {
+            display: inline-flex; align-items: center; cursor: pointer;
+            color: var(--text-secondary); font-size: 0.9em;
+        }
+         .unit-toggle input[type="radio"] {
+             margin-right: 6px; accent-color: var(--accent-color); transform: scale(1.1);
+         }
+
+        /* --- Layout Container --- */
+        .layout-container {
+            display: flex; gap: var(--layout-gap); margin-top: 30px; align-items: flex-start;
+        }
+
+        /* --- Chart Container Styling --- */
+        .chart-wrapper {
+            flex: 3; position: relative; border: 1px solid var(--border-color);
+            border-radius: var(--border-radius); padding: 15px; background-color: #fdfdfd;
+            height: var(--list-max-height); /* Match list max-height */
+        }
+        #chart-status {
+             text-align: center; padding: 20px; font-style: italic; color: var(--text-secondary);
+             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%;
+        }
+
+        /* --- List Section Styling --- */
+        .list-section {
+            flex: 2; border: 1px solid var(--border-color); border-radius: var(--border-radius);
+            padding: 15px; max-height: var(--list-max-height); overflow-y: auto;
+            background-color: #fdfdfd; display: flex; flex-direction: column; /* For summary+list */
+        }
+
+        /* --- Summary Box Styling --- */
+        #monthly-summary {
+            background-color: rgba(52, 152, 219, 0.08); /* Very light blue */
+            border: 1px solid rgba(52, 152, 219, 0.2);
+            color: var(--text-primary);
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+            line-height: 1.7; /* Better spacing for multiple lines */
+        }
+         #monthly-summary .summary-item {
+             display: flex;
+             align-items: center;
+             gap: 8px;
+             margin-bottom: 5px;
+         }
+          #monthly-summary .summary-item i {
+              color: var(--accent-color);
+              width: 18px; /* Align icons */
+              text-align: center;
+          }
+          #monthly-summary .summary-item .value {
+               font-weight: 600;
+               margin-left: auto; /* Push value to right */
+          }
+
+
+        #list-status { margin-bottom: 10px; } /* Margin for list status */
+
+        .content-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; /* Allow list to take space */ }
+        .content-list li {
+            margin: 8px 0; padding: 10px 12px; background: #f8f9fa;
+            border-radius: 6px; border: 1px solid var(--border-color); display: flex;
+            justify-content: flex-start; align-items: center; font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+        .content-list li.list-header {
+             background: #e9ecef; font-weight: 600; color: var(--text-primary);
+             padding: 8px 12px; position: sticky; top: -15px;
+             z-index: 10;
+        }
+         .content-list li i {
+             margin-right: 8px; color: var(--accent-color); width: 18px; text-align: center;
+         }
+        .content-list li .value {
+             font-weight: 500; color: var(--text-primary); margin-left: auto;
+             padding-left: 8px; text-align: right; white-space: nowrap;
+         }
+
+        .btn { /* Back button styling */
+            display: inline-flex; margin-top: 20px; padding: 12px 20px;
+            background: var(--accent-color); color: white; text-decoration: none;
+            border-radius: 8px; font-weight: 500; font-size: 0.95em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            align-items: center; gap: 8px; border: none; cursor: pointer;
+        }
+         .btn:hover { background-color: var(--accent-hover); transform: translateY(-2px); }
+
+        .loading-placeholder, .error-message {
+            color: var(--text-secondary); font-style: italic; padding: 15px;
+            text-align: center; border: 1px dashed var(--border-color);
+            border-radius: 8px; margin: 10px 0;
+        }
+         .error-message {
+             color: var(--error-color); background-color: rgba(231, 76, 60, 0.05);
+             border-color: rgba(231, 76, 60, 0.3); font-style: normal; font-weight: 500;
+         }
+
+         /* --- Responsive Styling --- */
+         @media (max-width: 768px) {
+            .layout-container { flex-direction: column; gap: var(--layout-gap); }
+             .chart-wrapper, .list-section { flex: 1 1 100%; max-height: none; }
+              .chart-wrapper { height: 300px; }
+             .list-section { overflow-y: visible; }
+             .content-list li.list-header { position: static; }
+         }
+
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Monthly Usage History</h1>
+    <div class="container">
+        <div class="card">
+            <h1><i class="fas fa-calendar-alt"></i> Monthly Usage History</h1>
 
-    <div class="unit-toggle">
-      <label><input type="radio" name="unit-monthly" value="kwh" checked> kWh</label>
-      <label><input type="radio" name="unit-monthly" value="wh"> Wh</label>
-    </div>
+            <div class="unit-toggle">
+                <label><input type="radio" name="unit-monthly" value="kwh" checked> kWh</label>
+                <label><input type="radio" name="unit-monthly" value="wh"> Wh</label>
+            </div>
 
-    <div id="monthly-summary" class="summary">Loading monthly summary...</div>
-    <ul id="monthly-list"></ul>
+            <div class="layout-container">
 
-    <a href="index.html" class="btn-back">⬅ Back to Dashboard</a>
-  </div>
+                <div class="chart-wrapper">
+                    <div id="chart-status">Loading chart data...</div>
+                    <canvas id="monthlyChartCanvas"></canvas>
+                </div>
 
-  <script>
-    const BASE_URL = "https://smart-meter-backend-s61l.onrender.com/smartmeter/";
+                <div class="list-section">
+                    <div id="monthly-summary">
+                        <div class="loading-placeholder">Loading summary...</div>
+                    </div>
+                    <div id="list-status"></div> <ul id="monthly-list" class="content-list">
+                        </ul>
+                </div>
 
-    function getSelectedUnit() {
-      return document.querySelector('input[name="unit-monthly"]:checked').value;
-    }
+            </div> </div> <a href="index.html" class="btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div> <script>
+        const BASE_URL = "https://smart-meter-backend-s61l.onrender.com/smartmeter/";
+        let monthlyChartInstance = null;
 
-    function convertWh(value, unit) {
-      return unit === 'kwh' ? (value / 1000).toFixed(3) : value.toFixed(0);
-    }
+        // --- Helper Functions ---
+        function getSelectedUnit() {
+            const selected = document.querySelector('input[name="unit-monthly"]:checked');
+            return selected ? selected.value : 'kwh';
+        }
+        function convertWh(value, unit) {
+            if (typeof value !== 'number' || isNaN(value)) return 'N/A';
+            return unit === 'kwh' ? (value / 1000).toFixed(3) : value.toFixed(0);
+        }
+         function convertWhForChart(value) {
+             if (typeof value !== 'number' || isNaN(value)) return 0;
+             return value; // Return raw Wh for chart data
+         }
+        // Add date formatting if needed, API returns "YYYY-MM-DD" which is okay for chart adapter
+        // function formatDate(dateString) { /* ... */ }
 
-    async function loadMonthlyData() {
-      const summaryRes = await fetch(`${BASE_URL}get-monthly-usage/`);
-      const summaryData = await summaryRes.json();
-      const historyRes = await fetch(`${BASE_URL}get-monthly-history/`);
-      const historyData = await historyRes.json();
+        function showLoading(elementId, message = "Loading...") {
+             const element = document.getElementById(elementId);
+             if (element) {
+                  // Specific handling for summary vs list status
+                  if (elementId === 'monthly-summary') {
+                      element.innerHTML = `<div class="loading-placeholder">${message}</div>`;
+                  } else {
+                       element.innerHTML = `<div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> ${message}</div>`;
+                  }
+                  element.style.display = 'block';
+             }
+         }
+        function showError(elementId, error, context = "") {
+              const element = document.getElementById(elementId);
+              if (element) {
+                  const errorMessage = `Error ${context}: ${error.message || error}`;
+                  console.error(`Error for ${elementId}:`, error);
+                   // Specific handling for summary vs list status
+                  if (elementId === 'monthly-summary') {
+                     element.innerHTML = `<div class="error-message">${errorMessage}</div>`;
+                  } else {
+                     element.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i> ${errorMessage}</div>`;
+                  }
+                  element.style.display = 'block';
+             }
+         }
+         function hideStatus(elementId) {
+              const element = document.getElementById(elementId);
+              if (element) {
+                  element.innerHTML = '';
+                  element.style.display = 'none'; // Can hide or just clear content
+              }
+         }
 
-      const unit = getSelectedUnit();
-      const summaryEl = document.getElementById('monthly-summary');
-      const listEl = document.getElementById('monthly-list');
+        // --- Chart Rendering Function ---
+        function renderMonthlyChart(labels, chartDataWh, unit) { // Expects dates and Wh values
+            const ctx = document.getElementById('monthlyChartCanvas').getContext('2d');
+            const chartStatusEl = document.getElementById('chart-status');
+            const chartCanvasEl = document.getElementById('monthlyChartCanvas');
 
-      summaryEl.innerHTML = `
-        Month: ${summaryData.month} ${summaryData.year}<br>
-        Total Usage: ${convertWh(summaryData.total_usage, unit)} ${unit.toUpperCase()}<br>
-        Days Recorded: ${summaryData.total_days_recorded}
-      `;
+            if (monthlyChartInstance) { monthlyChartInstance.destroy(); }
 
-      listEl.innerHTML = '<li><strong>Date — Usage</strong></li>';
-      historyData.data.forEach(entry => {
-        listEl.innerHTML += `<li>${entry.date} — ${convertWh(entry.usage, unit)} ${unit.toUpperCase()}</li>`;
-      });
-    }
+            if (!labels || labels.length === 0 || !chartDataWh || chartDataWh.length === 0) {
+                chartStatusEl.innerText = "No daily data available to display chart.";
+                chartStatusEl.style.display = 'block';
+                chartCanvasEl.style.display = 'none';
+                return;
+            } else {
+                chartStatusEl.style.display = 'none';
+                chartCanvasEl.style.display = 'block';
+            }
 
-    document.querySelectorAll('input[name="unit-monthly"]').forEach(radio => {
-      radio.addEventListener('change', loadMonthlyData);
-    });
+             // Convert Wh data to selected unit for display on axis/tooltips
+             const displayData = chartDataWh.map(wh => parseFloat(convertWh(wh, unit)));
+             const yAxisLabel = `Daily Usage (${unit.toUpperCase()})`;
+             const tooltipUnitSuffix = ` ${unit.toUpperCase()}`;
 
-    loadMonthlyData();
-  </script>
+             // Get theme colors
+             const lineColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-line-color').trim() || '#3498db';
+             const pointColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-point-color').trim() || '#3498db';
+             const fillColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-fill-color').trim() || 'rgba(52, 152, 219, 0.1)';
+
+
+            monthlyChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    // Labels should be dates recognizable by the date adapter (e.g., "YYYY-MM-DD")
+                    labels: labels,
+                    datasets: [{
+                        label: yAxisLabel,
+                        data: displayData, // Use converted data for scale
+                        fill: true, // Fill area under the line
+                        backgroundColor: fillColor,
+                        borderColor: lineColor,
+                        pointBackgroundColor: pointColor,
+                        pointBorderColor: pointColor,
+                        pointRadius: 3, // Adjust point size
+                        pointHoverRadius: 5,
+                        tension: 0.1 // Slight curve to the line
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true, backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: { weight: 'bold' }, bodyFont: { size: 14 },
+                            callbacks: {
+                                // Title will likely be the date from the adapter
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toFixed(unit === 'kwh' ? 3 : 0) + tooltipUnitSuffix;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                     },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: yAxisLabel, font: { size: 14, weight: '500' }, color: 'var(--text-secondary)' },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: {
+                            type: 'time', // Use time scale
+                             time: {
+                                 unit: 'day', // Display labels per day
+                                 tooltipFormat: 'MMM dd, yyyy', // Tooltip date format
+                                 displayFormats: {
+                                     day: 'MMM dd' // X-axis label format
+                                 }
+                             },
+                            title: { display: true, text: 'Date', font: { size: 14, weight: '500' }, color: 'var(--text-secondary)' },
+                            grid: { display: false }
+                        }
+                     }
+                }
+            });
+        }
+
+        // --- Main Data Loading Function ---
+        async function loadMonthlyData() {
+            const summaryEl = document.getElementById('monthly-summary');
+            const listEl = document.getElementById('monthly-list');
+            const listStatus = document.getElementById('list-status');
+            const chartStatus = document.getElementById('chart-status');
+            const chartCanvas = document.getElementById('monthlyChartCanvas');
+            const unit = getSelectedUnit();
+
+            // Reset states
+            listEl.innerHTML = '';
+            hideStatus('list-status');
+            showLoading('monthly-summary', "Loading summary..."); // Show loading for summary
+            chartStatus.innerText = 'Loading chart data...';
+            chartStatus.style.display = 'block';
+            chartCanvas.style.display = 'none'; // Hide canvas
+
+            let summaryData, historyData;
+
+            try {
+                // Fetch Summary
+                const summaryRes = await fetch(`${BASE_URL}get-monthly-usage/`);
+                if (!summaryRes.ok) throw new Error(`HTTP error! status: ${summaryRes.status}`);
+                summaryData = await summaryRes.json();
+                if (summaryData.error) throw new Error(summaryData.error);
+
+                // Update Summary Display
+                 summaryEl.innerHTML = `
+                     <div class="summary-item"><i class="far fa-calendar-alt"></i> Month: <span class="value">${summaryData.month || 'N/A'} ${summaryData.year || ''}</span></div>
+                     <div class="summary-item"><i class="fas fa-chart-pie"></i> Total Usage: <span class="value">${convertWh(summaryData.total_usage, unit)} ${unit.toUpperCase()}</span></div>
+                     <div class="summary-item"><i class="fas fa-clipboard-list"></i> Days Recorded: <span class="value">${summaryData.total_days_recorded ?? 'N/A'}</span></div>
+                 `;
+
+                // Fetch History (for List and Chart)
+                showLoading('list-status', "Loading daily history..."); // Show loading for list
+                const historyRes = await fetch(`${BASE_URL}get-monthly-history/`);
+                if (!historyRes.ok) throw new Error(`HTTP error! status: ${historyRes.status}`);
+                historyData = await historyRes.json();
+                if (historyData.error || !Array.isArray(historyData.data)) {
+                    throw new Error(historyData.error || "Invalid history data format.");
+                }
+
+                // Process and Display History (List & Chart)
+                hideStatus('list-status'); // Hide list loading
+
+                // Prepare list data
+                listEl.innerHTML = '<li class="list-header"><i class="fas fa-calendar-day"></i> Date <span class="value">Daily Usage</span></li>';
+                if (historyData.data.length === 0) {
+                     listEl.innerHTML += '<li><i class="fas fa-info-circle"></i> No daily usage data recorded for this month yet.</li>';
+                     chartStatus.innerText = "No daily data available to display chart."; // Update chart status too
+                     chartStatus.style.display = 'block';
+                     chartCanvas.style.display = 'none';
+                } else {
+                     const sortedListData = [...historyData.data].sort((a, b) => new Date(a.date) - new Date(b.date)); // Sort by date
+
+                     // Populate List
+                     sortedListData.forEach(entry => {
+                         const usage = convertWh(entry.usage, unit);
+                         listEl.innerHTML += `
+                             <li>
+                                 <i class="fas fa-calendar-day"></i> ${entry.date || 'N/A'}
+                                 <span class="value">${usage} ${unit.toUpperCase()}</span>
+                             </li>`;
+                     });
+
+                     // Prepare Chart Data
+                     const chartLabels = sortedListData.map(entry => entry.date); // Use date strings directly
+                     const chartValuesWh = sortedListData.map(entry => convertWhForChart(entry.usage));
+
+                     // Render Chart
+                     renderMonthlyChart(chartLabels, chartValuesWh, unit);
+                 }
+
+            } catch (error) {
+                console.error("Failed to load monthly data:", error);
+                showError('monthly-summary', error, "loading summary"); // Show error in summary if it happened early
+                showError('list-status', error, "loading history"); // Show error in list status
+                chartStatus.innerText = `Error loading chart: ${error.message || error}`; // Show error in chart status
+                chartStatus.style.display = 'block';
+                chartCanvas.style.display = 'none'; // Ensure canvas is hidden
+                 // Clear list if history fetch failed after summary succeeded
+                 if (!historyData) listEl.innerHTML = '';
+            }
+        }
+
+
+        // Event listeners
+        document.querySelectorAll('input[name="unit-monthly"]').forEach(radio => {
+            radio.addEventListener('change', loadMonthlyData);
+        });
+
+        // Initial load
+        loadMonthlyData();
+    </script>
 </body>
 </html>
